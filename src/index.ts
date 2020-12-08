@@ -1,1 +1,1 @@
-export { extractMetadata } from './lib/metadataextraction';
+export { extractMetadata } from "./lib/metadataExtraction";

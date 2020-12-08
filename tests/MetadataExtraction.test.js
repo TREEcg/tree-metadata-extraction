@@ -1,13 +1,15 @@
 /* eslint-disable no-multi-str */
-import { expect } from 'chai'
-import 'mocha'
-import * as N3 from 'n3'
-import * as RDF from 'rdf-js'
-import ns from '../src/util/NameSpaces';
+const expect = require('chai').expect
+require('mocha')
+const N3 = require('n3')
+const ns = require('../dist/util/NameSpaces').default
+const extractMetadata = require('../dist/lib/metadataExtraction').extractMetadata
+// import { expect } from 'chai'
+// import 'mocha'
+// import * as N3 from 'n3'
+// import ns from '../src/util/NameSpaces';
 // import { extractMetadata } from '../src/lib/metadataextraction';
-import { extractMetadata } from '../src/lib/metadataExtraction';
-import { Collection, Node, Relation, JSONLDLiteral, clearObj, RelationType, JSONLDIdentifier } from '../src/util/Util';
-import * as jsonld from 'jsonld';
+// import { extractMetadata } from '../src/lib/metadataExtraction';
 
 const context = { "@vocab": ns.tree(''), ex: ns.ex(''), xsd: ns.xsd('') }
 
@@ -45,13 +47,10 @@ async function evaluateMetadataExtraction(input, result) {
     // Clear blank node Ids
     clearJSONLDBlankNodeIds(extractedMetadataPerType[type]);
     clearJSONLDBlankNodeIds(result[type]);
-
-    console.log(JSON.stringify(extractedMetadataPerType[type], null, 2))
     
     expect (extractedMetadataPerType[type].length).to.equal(result[type].length)
     for (let i = 0; i < extractedMetadataPerType[type].length; i++) {
       expect(extractedMetadataPerType[type][i]).to.deep.equal(result[type][i])
-      // expect(await jsonld.expand(extractedMetadataPerType[type][i])).to.deep.equal(await jsonld.expand(result[type][i]))
     }
   }
 }

@@ -2,7 +2,7 @@ import * as RDF from 'rdf-js'
 import * as N3 from 'n3'
 import { storeStream } from 'rdf-store-stream'
 import ns from '../util/NameSpaces'
-import { RelationType } from '../util/Util';
+import { RelationType, Literal, Collection, Node, Relation } from '../util/Util';
 import * as jsonld from 'jsonld';
 
 const context = { "@vocab": ns.tree('') }
@@ -76,7 +76,7 @@ function extractNodeIds(store: N3.Store) {
 function extractRelationIds(store: N3.Store) {
   let ids: string[] = []
   // Search for node ids
-  for(let relationType of Object.keys(RelationType).map(key => RelationType[key]) ) {
+  for(let relationType of Object.keys(RelationType).map(key => (RelationType as any)[key]) ) {
     ids = ids.concat( store.getQuads(null, ns.rdf('type'), relationType, null).map(quad => quad.subject.id) );
   }
   return Array.from(new Set(ids))
@@ -124,7 +124,6 @@ function extractRelationMetadata(store: N3.Store, id: string) {
     "@context": context,
     "@id": id,
    }
-   console.log('RELATION', id, store.getQuads(null, null, null, null))
 
   // extract tree:view metadata
   setField(r, "@type", store.getQuads(id, ns.rdf('type'), null, null).map(quad =>  quad.object.id));
@@ -153,15 +152,15 @@ function retrieveFullObject(store: N3.Store, term: N3.Term){
   } 
 }
 
-const createLiteral = (store: N3.Store, literal: N3.Literal) => {
-  const item = { "@value": literal.value }
+const createLiteral = (store: N3.Store, literal: N3.Literal) : Literal => {
+  const item : Literal = { "@value": literal.value }
   if (literal.datatype) item["@type"] = literal.datatype.id
   if (literal.language) item["@language"] = literal.language;
   return item;
 }
 
 const createNode = (store: N3.Store, namedNode: N3.NamedNode | N3.BlankNode) => {
-  const item = namedNode.termType === "NamedNode" ? { "@id": namedNode.id } : {}
+  const item : any = namedNode.termType === "NamedNode" ? { "@id": namedNode.id } : {}
   const quads = store.getQuads(namedNode.id, null, null, null)
   for (let quad of quads) {
     if (quad.predicate.id === ns.rdf('type')) item["@type"] = quad.object.id
@@ -174,7 +173,7 @@ const createNode = (store: N3.Store, namedNode: N3.NamedNode | N3.BlankNode) => 
  * Helper function. Only add a field if there is a value for this field.
  * If the field already has results, concatenate the new results.
  */
-function setField(object, field, results) {
+function setField(object: any, field: string, results: any[]) {
   if (results && results.length) {
     if (object.field && object.field.length) {
       object[field] = object[field].concat(results)
@@ -182,40 +181,4 @@ function setField(object, field, results) {
       object[field] = results
     }
   }
-}
-
-
-export interface Collection {
-  "@context": any,
-  "@id": string,
-  "view"?: any[],
-  "member"?: any[],
-  "import"?: any[],
-  "importStream"?: any[],
-  "conditionalImport"?: any[],
-}
-
-export interface Node {
-  "@context": any,
-  "@id": string,
-  "@type"?: string[],
-  "search"?: any[],
-  "relation"?: any[],
-  "import"?: any[],
-  "importStream"?: any[],
-  "conditionalImport"?: any[],
-
-}
-
-export interface Relation {
-  "@context": any,
-  "@id": string,
-  "@type"?: string[],
-  "remainingItems"?: any[],
-  "path"?: any[],
-  "value"?: any[],
-  "node"?: any[],
-  "import"?: any[],
-  "importStream"?: any[],
-  "conditionalImport"?: any[],
 }
