@@ -46,6 +46,12 @@ export interface Relation {
   "conditionalImport"?: any[],
 }
 
+export interface ConditionalImport {
+  "@id"?: string,
+  "import"?: any[],
+  "importStream"?: any[],
+  "conditionalImport"?: any[],
+}
 export interface Literal {
   "@value": string,
   "@type"?: string,
