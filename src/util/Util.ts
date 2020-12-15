@@ -16,6 +16,7 @@ export interface Collection {
   "@id": string,
   "view"?: any[],
   "member"?: any[],
+  "shape"?: any[],
   "import"?: any[],
   "importStream"?: any[],
   "conditionalImport"?: any[],

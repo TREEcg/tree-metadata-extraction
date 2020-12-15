@@ -5,10 +5,12 @@ const N3 = require('n3')
 const ns = require('../dist/util/NameSpaces').default
 const extractMetadata = require('../dist/lib/metadataExtraction').extractMetadata
 
-const context = { "@vocab": ns.tree('') }
+const context = {
+  "@vocab": ns.tree('')
+}
 
 var testcount = 0
-async function test (turtleString, result, message) {
+async function test(turtleString, result, message) {
   it(message, async () => {
     const quadArray = [];
     await new N3.Parser().parse(turtleString,
@@ -27,8 +29,8 @@ async function evaluateMetadataExtraction(input, result) {
   for (let type of ['collections', 'nodes', 'relations']) {
     let extractedMapping = extractedMetadataPerType[type]
     let resultMapping = result[type]
-    
-    expect (extractedMapping.size).to.equal(resultMapping.size)
+
+    expect(extractedMapping.size).to.equal(resultMapping.size)
     for (let key of resultMapping.keys()) {
       expect(extractedMapping.get(key)).to.deep.equal(resultMapping.get(key))
     }
@@ -38,205 +40,246 @@ async function evaluateMetadataExtraction(input, result) {
 describe('Testing path matching',
   () => {
 
-    // var collectionTest =  `
-    //   @prefix ex: <${ns.ex('')}> . 
-    //   @prefix tree: <${ns.tree('')}> . 
-    //   ex:c a tree:Collection ;
-    //     tree:view ex:node1 ;
-    //     tree:view ex:node2 ;
-    //     tree:member ex:m1 ;
-    //     tree:member ex:m2 ;
-    //     tree:member ex:m3 ;
-    //     tree:import ex:filetoimport.ttl .
-    // `
+    var collectionTest = `
+      @prefix ex: <${ns.ex('')}> . 
+      @prefix tree: <${ns.tree('')}> . 
+      ex:c a tree:Collection ;
+        tree:view ex:node1 ;
+        tree:view ex:node2 ;
+        tree:member ex:m1 ;
+        tree:member ex:m2 ;
+        tree:member ex:m3 ;
+        tree:import ex:filetoimport.ttl .
+    `
 
-    // var c = {
-    //   "@context": context, 
-    //   "@id": ns.ex("c"),
-    //   "@type": [ ns.tree('Collection') ],
-    //   "import": [ { "@id": ns.ex("filetoimport.ttl") } ],
-    //   "member": [ { "@id": ns.ex("m1") }, { "@id": ns.ex("m2") }, { "@id": ns.ex("m3") } ],
-    //   "view": [  { "@id": ns.ex("node1") }, { "@id": ns.ex("node2") } ]
-    // }
+    var c = {
+      "@context": context,
+      "@id": ns.ex("c"),
+      "@type": [ns.tree('Collection')],
+      "import": [{
+        "@id": ns.ex("filetoimport.ttl")
+      }],
+      "member": [{
+        "@id": ns.ex("m1")
+      }, {
+        "@id": ns.ex("m2")
+      }, {
+        "@id": ns.ex("m3")
+      }],
+      "view": [{
+        "@id": ns.ex("node1")
+      }, {
+        "@id": ns.ex("node2")
+      }]
+    }
 
-    // var collections = new Map();
-    // collections.set(ns.ex("c"), c)
-    
-    // var collectionTestResult = {
-    //   collections: collections, nodes: new Map(), relations: new Map(),
-    // }
-    
-    // test(collectionTest, collectionTestResult, "Should be able to extract TREE collection metadata from a quad array")
+    var collections = new Map();
+    collections.set(ns.ex("c"), c)
 
+    var collectionTestResult = {
+      collections: collections,
+      nodes: new Map(),
+      relations: new Map(),
+    }
 
-    // var nodeTest =  `
-    //   @prefix ex: <${ns.ex('')}> . 
-    //   @prefix tree: <${ns.tree('')}> . 
-    //   ex:n a tree:Node ;
-    //     tree:relation ex:relation1 ;
-    //     tree:relation ex:relation2 ;
-    //     tree:search _:search ;
-    //     tree:conditionalImport _:conditionalimport .
-
-    //   _:search tree:timeQuery "timeQuery";
-    //     tree:zoom "zoom";
-    //     tree:latitudeTile "latitudeTile";
-    //     tree:longitudeTile "longitudeTile".
-
-    //   _:conditionalimport  tree:path ex:pathName;
-    //     tree:import ex:import;
-    //     tree:importStream ex:importStream.
-    // `
-    // var n = {
-    //   "@context": context,
-    //   "@id": ns.ex("n"),
-    //   "@type": [ ns.tree('Node') ],
-    //   "conditionalImport": [ {
-    //     "import": [ { "@id": ns.ex("import") } ],
-    //     "importStream": [ { "@id": ns.ex("importStream") } ],
-    //     "path": [ { "@id": ns.ex("pathName") } ]
-    //   } ],
-    //   "relation": [ 
-    //     { "@id": ns.ex("relation1") }, 
-    //     { "@id": ns.ex("relation2") }
-    //   ],
-    //   "search": [ {
-    //     [ns.tree("latitudeTile")]: [ {
-    //       "@value": "latitudeTile",
-    //       "@type": ns.xsd("string"),
-    //     } ],
-    //     [ns.tree("longitudeTile")]: [ {
-    //       "@value": "longitudeTile",
-    //       "@type": ns.xsd("string"),
-    //     } ],
-    //     [ns.tree("timeQuery")]: [ {
-    //       "@value": "timeQuery",
-    //       "@type": ns.xsd("string"),
-    //     } ],
-    //     [ns.tree("zoom")]: [ {
-    //       "@value": "zoom",
-    //       "@type": ns.xsd("string"),
-    //     } ]
-    //   } ]
-    // }
-
-    // var nodes = new Map();
-    // nodes.set(ns.ex("n"), n)
-   
-    // var nodeTestResult = {
-    //   collections: new Map(), nodes: nodes, relations: new Map(),
-    // }
-    
-    // test(nodeTest, nodeTestResult, "Should be able to extract TREE node metadata from a quad array")
+    test(collectionTest, collectionTestResult, "Should be able to extract TREE collection metadata from a quad array")
 
 
+    var nodeTest = `
+      @prefix ex: <${ns.ex('')}> . 
+      @prefix tree: <${ns.tree('')}> . 
+      ex:n a tree:Node ;
+        tree:relation ex:relation1 ;
+        tree:relation ex:relation2 ;
+        tree:search _:search ;
+        tree:conditionalImport _:conditionalimport .
 
-    // var relationTest =  `
-    //   @prefix ex: <${ns.ex('')}> . 
-    //   @prefix tree: <${ns.tree('')}> . 
-    //   @prefix xsd: <${ns.xsd('')}> . 
-    //   ex:r a tree:PrefixRelation ;
-    //     tree:remainingItems "10"^^xsd:integer ;
-    //     tree:path ex:predicatePath ;
-    //     tree:value "test" ;
-    //     tree:node ex:Node2 ;
-    //     tree:conditionalImport _:conditionalimport2 ;
-    //     tree:import ex:import .
+      _:search tree:timeQuery "timeQuery";
+        tree:zoom "zoom";
+        tree:latitudeTile "latitudeTile";
+        tree:longitudeTile "longitudeTile".
 
-    //   _:conditionalimport2 tree:path ex:pathName ;
-    //   tree:import ex:import ;
-    //   tree:importStream ex:importStream .
-    // `
-    // var r = {
-    //   "@context": context,
-    //   "@id": ns.ex("r"),
-    //   "@type": [ ns.tree('PrefixRelation') ],
-    //   "conditionalImport": [ { 
-    //     "import": [ { "@id": ns.ex("import") } ],
-    //     "importStream": [ { "@id": ns.ex("importStream") } ],
-    //     "path": [ { "@id": ns.ex("pathName") } ]
-    //   } ],
-    //   "import": [ { "@id": ns.ex("import") } ],
-    //   "node": [ { "@id": ns.ex("Node2") } ],
-    //   "path": [ { "@id": ns.ex("predicatePath") } ],
-    //   "remainingItems": [ {
-    //     "@value": "10",
-    //     "@type": ns.xsd("integer"),
-    //   } ],
-    //   "value": [ {
-    //     "@value": "test",
-    //     "@type": ns.xsd("string"),
-    //   } ]
-    // }
+      _:conditionalimport  tree:path ex:pathName;
+        tree:import ex:import;
+        tree:importStream ex:importStream.
+    `
+    var n = {
+      "@context": context,
+      "@id": ns.ex("n"),
+      "@type": [ns.tree('Node')],
+      "conditionalImport": [{
+        "import": [{
+          "@id": ns.ex("import")
+        }],
+        "importStream": [{
+          "@id": ns.ex("importStream")
+        }],
+        "path": [{
+          "@id": ns.ex("pathName")
+        }]
+      }],
+      "relation": [{
+          "@id": ns.ex("relation1")
+        },
+        {
+          "@id": ns.ex("relation2")
+        }
+      ],
+      "search": [{
+        [ns.tree("latitudeTile")]: [{
+          "@value": "latitudeTile",
+          "@type": ns.xsd("string"),
+        }],
+        [ns.tree("longitudeTile")]: [{
+          "@value": "longitudeTile",
+          "@type": ns.xsd("string"),
+        }],
+        [ns.tree("timeQuery")]: [{
+          "@value": "timeQuery",
+          "@type": ns.xsd("string"),
+        }],
+        [ns.tree("zoom")]: [{
+          "@value": "zoom",
+          "@type": ns.xsd("string"),
+        }]
+      }]
+    }
 
-    // var relations = new Map();
-    // relations.set(ns.ex("r"), r)
-   
-    // var relationTestResult = {
-    //   collections: new Map(), nodes: new Map(), relations: relations,
-    // }
-    
-    // test(relationTest, relationTestResult, "Should be able to extract TREE relation metadata from a quad array")
-    
+    var nodes = new Map();
+    nodes.set(ns.ex("n"), n)
+
+    var nodeTestResult = {
+      collections: new Map(),
+      nodes: nodes,
+      relations: new Map(),
+    }
+
+    test(nodeTest, nodeTestResult, "Should be able to extract TREE node metadata from a quad array")
 
 
 
+    var relationTest = `
+      @prefix ex: <${ns.ex('')}> . 
+      @prefix tree: <${ns.tree('')}> . 
+      @prefix xsd: <${ns.xsd('')}> . 
+      ex:r a tree:PrefixRelation ;
+        tree:remainingItems "10"^^xsd:integer ;
+        tree:path ex:predicatePath ;
+        tree:value "test" ;
+        tree:node ex:Node2 ;
+        tree:conditionalImport _:conditionalimport2 ;
+        tree:import ex:import .
+
+      _:conditionalimport2 tree:path ex:pathName ;
+      tree:import ex:import ;
+      tree:importStream ex:importStream .
+    `
+    var r = {
+      "@context": context,
+      "@id": ns.ex("r"),
+      "@type": [ns.tree('PrefixRelation')],
+      "conditionalImport": [{
+        "import": [{
+          "@id": ns.ex("import")
+        }],
+        "importStream": [{
+          "@id": ns.ex("importStream")
+        }],
+        "path": [{
+          "@id": ns.ex("pathName")
+        }]
+      }],
+      "import": [{
+        "@id": ns.ex("import")
+      }],
+      "node": [{
+        "@id": ns.ex("Node2")
+      }],
+      "path": [{
+        "@id": ns.ex("predicatePath")
+      }],
+      "remainingItems": [{
+        "@value": "10",
+        "@type": ns.xsd("integer"),
+      }],
+      "value": [{
+        "@value": "test",
+        "@type": ns.xsd("string"),
+      }]
+    }
+
+    var relations = new Map();
+    relations.set(ns.ex("r"), r)
+
+    var relationTestResult = {
+      collections: new Map(),
+      nodes: new Map(),
+      relations: relations,
+    }
+
+    test(relationTest, relationTestResult, "Should be able to extract TREE relation metadata from a quad array")
 
 
-    // var combinedTest =  `
-    //   @prefix ex: <${ns.ex('')}> . 
-    //   @prefix tree: <${ns.tree('')}> . 
-    //   @prefix xsd: <${ns.xsd('')}> . 
-    //   ex:c a tree:Collection ;
-    //     tree:view ex:node1 ;
-    //     tree:view ex:node2 ;
-    //     tree:member ex:m1 ;
-    //     tree:member ex:m2 ;
-    //     tree:member ex:m3 ;
-    //     tree:import ex:filetoimport.ttl .
-
-    //   ex:n a tree:Node ;
-    //     tree:relation ex:relation1 ;
-    //     tree:relation ex:relation2 ;
-    //     tree:search _:search ;
-    //     tree:conditionalImport _:conditionalimport .
-
-    //   ex:r a tree:PrefixRelation ;
-    //   tree:remainingItems "10"^^xsd:integer ;
-    //   tree:path ex:predicatePath ;
-    //   tree:value "test" ;
-    //   tree:node ex:Node2 ;
-    //   tree:conditionalImport _:conditionalimport2 ;
-    //   tree:import ex:import .
-
-    //   _:search tree:timeQuery "timeQuery";
-    //     tree:zoom "zoom";
-    //     tree:latitudeTile "latitudeTile";
-    //     tree:longitudeTile "longitudeTile".
-
-    //   _:conditionalimport  tree:path ex:pathName;
-    //     tree:import ex:import;
-    //     tree:importStream ex:importStream.
-
-    //   _:conditionalimport2  tree:path ex:pathName ;
-    //     tree:import ex:import ;
-    //     tree:importStream ex:importStream .
-    // `
 
 
 
-    // var collections = new Map();
-    // collections.set(ns.ex("c"), c)
-    // var nodes = new Map();
-    // nodes.set(ns.ex("n"), n)
-    // var relations = new Map();
-    // relations.set(ns.ex("r"), r)
-   
-    // var combinedTestResults = {
-    //   collections: collections, nodes: nodes, relations: relations,
-    // }
 
-    // test(combinedTest, combinedTestResults, "Should be able to extract all TREE metadata from a quad array")
+    var combinedTest = `
+      @prefix ex: <${ns.ex('')}> . 
+      @prefix tree: <${ns.tree('')}> . 
+      @prefix xsd: <${ns.xsd('')}> . 
+      ex:c a tree:Collection ;
+        tree:view ex:node1 ;
+        tree:view ex:node2 ;
+        tree:member ex:m1 ;
+        tree:member ex:m2 ;
+        tree:member ex:m3 ;
+        tree:import ex:filetoimport.ttl .
+
+      ex:n a tree:Node ;
+        tree:relation ex:relation1 ;
+        tree:relation ex:relation2 ;
+        tree:search _:search ;
+        tree:conditionalImport _:conditionalimport .
+
+      ex:r a tree:PrefixRelation ;
+      tree:remainingItems "10"^^xsd:integer ;
+      tree:path ex:predicatePath ;
+      tree:value "test" ;
+      tree:node ex:Node2 ;
+      tree:conditionalImport _:conditionalimport2 ;
+      tree:import ex:import .
+
+      _:search tree:timeQuery "timeQuery";
+        tree:zoom "zoom";
+        tree:latitudeTile "latitudeTile";
+        tree:longitudeTile "longitudeTile".
+
+      _:conditionalimport  tree:path ex:pathName;
+        tree:import ex:import;
+        tree:importStream ex:importStream.
+
+      _:conditionalimport2  tree:path ex:pathName ;
+        tree:import ex:import ;
+        tree:importStream ex:importStream .
+    `
+
+
+
+    var collections = new Map();
+    collections.set(ns.ex("c"), c)
+    var nodes = new Map();
+    nodes.set(ns.ex("n"), n)
+    var relations = new Map();
+    relations.set(ns.ex("r"), r)
+
+    var combinedTestResults = {
+      collections: collections,
+      nodes: nodes,
+      relations: relations,
+    }
+
+    test(combinedTest, combinedTestResults, "Should be able to extract all TREE metadata from a quad array")
 
     const sensordatatest = `
       @prefix ex: <${ns.ex('')}> . 
@@ -312,61 +355,131 @@ describe('Testing path matching',
     `
 
     const sensorCollections = new Map()
-    sensorCollections.set("https://streams.datapiloten.be/sensors", 
-      {
-        "@context": context,
-        "@id": "https://streams.datapiloten.be/sensors",
-        "member": [
-          {
-            "@id": "https://streams.datapiloten.be/sensors#lora.3432333857376518@2020-06-30T14:32:57.732Z",
+    sensorCollections.set("https://streams.datapiloten.be/sensors", {
+      "@context": context,
+      "@id": "https://streams.datapiloten.be/sensors",
+      "member": [{
+          "@id": "https://streams.datapiloten.be/sensors#lora.3432333857376518@2020-06-30T14:32:57.732Z",
+        },
+        {
+          "@id": "https://streams.datapiloten.be/sensors#lora.3432333857376518@2020-06-30T14:32:57.784Z",
+        },
+        {
+          "@id": "https://streams.datapiloten.be/sensors#lora.3432333857376518@2020-06-30T14:32:57.785Z",
+        },
+        {
+          "@id": "urn:ngsi-v2:cot-imec-be:device:imec-airquality-mobile-55vA4L2hoZ3VA48YJQcUiJ#@2020-06-30T14:32:57.785Z",
+        }
+      ],
+      "shape": [{
+        "https://www.w3.org/ns/shacl#property": [{
+            "https://www.w3.org/ns/shacl#maxCount": [{
+              "@type": "http://www.w3.org/2001/XMLSchema#integer",
+              "@value": "1"
+            }],
+            "https://www.w3.org/ns/shacl#minCount": [{
+              "@type": "http://www.w3.org/2001/XMLSchema#integer",
+              "@value": "1"
+            }],
+            "https://www.w3.org/ns/shacl#nodeKind": [{
+              "@id": "https://www.w3.org/ns/shacl#IRI",
+            }],
+            "https://www.w3.org/ns/shacl#path": [{
+              "@id": "http://purl.org/dc/terms/isVersionOf",
+            }],
           },
           {
-            "@id": "https://streams.datapiloten.be/sensors#lora.3432333857376518@2020-06-30T14:32:57.784Z",
+            "https://www.w3.org/ns/shacl#datatype": [{
+              "@id": "http://www.w3.org/2001/XMLSchema#dateTime",
+            }],
+            "https://www.w3.org/ns/shacl#maxCount": [{
+              "@type": "http://www.w3.org/2001/XMLSchema#integer",
+              "@value": "1",
+            }],
+            "https://www.w3.org/ns/shacl#minCount": [{
+              "@type": "http://www.w3.org/2001/XMLSchema#integer",
+              "@value": "1",
+            }],
+            "https://www.w3.org/ns/shacl#path": [{
+              "@id": "http://www.w3.org/ns/prov#generatedAtTime",
+            }],
           },
           {
-            "@id": "https://streams.datapiloten.be/sensors#lora.3432333857376518@2020-06-30T14:32:57.785Z",
-          },
-          {
-            "@id": "urn:ngsi-v2:cot-imec-be:device:imec-airquality-mobile-55vA4L2hoZ3VA48YJQcUiJ#@2020-06-30T14:32:57.785Z",
+            "https://www.w3.org/ns/shacl#maxCount": [{
+              "@type": "http://www.w3.org/2001/XMLSchema#integer",
+              "@value": "1",
+            }],
+            "https://www.w3.org/ns/shacl#minCount": [{
+              "@type": "http://www.w3.org/2001/XMLSchema#integer",
+              "@value": "1",
+            }],
+            "https://www.w3.org/ns/shacl#node": [{
+              "https://www.w3.org/ns/shacl#property": [{
+                "https://www.w3.org/ns/shacl#datatype": [{
+                  "@id": "http://www.opengis.net/ont/geosparql#wktLiteral",
+                }],
+                "https://www.w3.org/ns/shacl#maxCount": [{
+                  "@type": "http://www.w3.org/2001/XMLSchema#integer",
+                  "@value": "1",
+                }],
+                "https://www.w3.org/ns/shacl#minCount": [{
+                  "@type": "http://www.w3.org/2001/XMLSchema#integer",
+                  "@value": "1",
+                }],
+                "https://www.w3.org/ns/shacl#path": [{
+                  "@id": "http://www.opengis.net/ont/geosparql#asWKT",
+                }],
+              }]
+            }],
+            "https://www.w3.org/ns/shacl#path": [{
+              "@id": "http://www.opengis.net/ont/geosparql#hasGeometry",
+            }],
+          }, {
+            "https://www.w3.org/ns/shacl#minCount": [{
+              "@type": "http://www.w3.org/2001/XMLSchema#integer",
+              "@value": "1"
+            }],
+            "https://www.w3.org/ns/shacl#nodeKind": [{
+              "@id": "https://www.w3.org/ns/shacl#IRI"
+            }],
+            "https://www.w3.org/ns/shacl#path": [{
+              "@id": "http://www.w3.org/ns/sosa/observes"
+            }],
           }
         ],
-        "view": [ {
-          "@id": "https://streams.datapiloten.be/sensors?page=1"
-        } ]
-      }
-    )
-    
+      }],
+      "view": [{
+        "@id": "https://streams.datapiloten.be/sensors?page=1"
+      }]
+    })
+
     // blank node ids are required to reference the relevant objects
     const sensorNodes = new Map();
-    sensorNodes.set("https://streams.datapiloten.be/sensors?page=1", 
-      {
-        "@context": context,
-        "@id": "https://streams.datapiloten.be/sensors?page=1",
-        "relation": [ {
-          "@id": "_:b0_b13"
-        } ]
-      }
-    ) 
+    sensorNodes.set("https://streams.datapiloten.be/sensors?page=1", {
+      "@context": context,
+      "@id": "https://streams.datapiloten.be/sensors?page=1",
+      "relation": [{
+        "@id": "_:b4_b13"
+      }]
+    })
 
     // blank node ids are required to reference the relevant objects
     const sensorRelations = new Map();
-    sensorRelations.set('_:b0_b13', 
-      {
-        "@context": context,
-        "@id": "_:b0_b13",
-        "@type": [ ns.tree("GreaterThanRelation") ],
-        "node": [ {
-          "@id": "https://streams.datapiloten.be/sensors?page=2"
-        } ],
-        "path": [ {
-          "@id": "http://www.w3.org/ns/prov#generatedAtTime"
-        } ],
-        "value": [ {
-          "@type": ns.xsd("dateTime"),
-          "@value": "2020-06-30T14:48:52.013Z"
-        } ]
-      }
-    )
+    sensorRelations.set('_:b4_b13', {
+      "@context": context,
+      "@id": "_:b4_b13",
+      "@type": [ns.tree("GreaterThanRelation")],
+      "node": [{
+        "@id": "https://streams.datapiloten.be/sensors?page=2"
+      }],
+      "path": [{
+        "@id": "http://www.w3.org/ns/prov#generatedAtTime"
+      }],
+      "value": [{
+        "@type": ns.xsd("dateTime"),
+        "@value": "2020-06-30T14:48:52.013Z"
+      }]
+    })
 
     const sensordataResult = {
       collections: sensorCollections,

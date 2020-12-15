@@ -1,9 +1,7 @@
 import * as RDF from 'rdf-js'
 import * as N3 from 'n3'
-import { storeStream } from 'rdf-store-stream'
 import ns from '../util/NameSpaces'
 import { RelationType, Literal, Collection, Node, Relation, ConditionalImport } from '../util/Util';
-import * as jsonld from 'jsonld';
 
 const context = { "@vocab": ns.tree('') }
 
@@ -15,9 +13,6 @@ export async function extractMetadata (quads: RDF.Quad[]) {
   const nodeIds = await extractNodeIds(store)
   const relationIds = await extractRelationIds(store)
 
-  // const collectionsMetadata = new Array();
-  // const nodesMetadata = new Array();
-  // const relationsMetadata = new Array();
   const collectionsMetadata = new Map();
   const nodesMetadata = new Map();
   const relationsMetadata = new Map();
@@ -25,26 +20,14 @@ export async function extractMetadata (quads: RDF.Quad[]) {
   for (let id of collectionIds) {
     const metadata = await extractCollectionMetadata(store, id)
     collectionsMetadata.set(id, metadata)
-
-    // const expanded = await jsonld.expand(metadata)
-    // collectionsMetadata.set(id, expanded[0]) // we take the first value, because we know we extracted metadata for a single collection, which should in a single object
-    // collectionsMetadata.push(await jsonld.compact(metadata, context))
   }
   for (let id of nodeIds) {
     const metadata = await extractNodeMetadata(store, id)
     nodesMetadata.set(id, metadata)
-
-    // const expanded = await jsonld.expand(metadata)
-    // nodesMetadata.set(id, expanded[0]) // we take the first value, because we know we extracted metadata for a single collection, which should in a single object
-    // nodesMetadata.push(await jsonld.compact(metadata, context))
   }
   for (let id of relationIds) {
     const metadata = await extractRelationMetadata(store, id)
     relationsMetadata.set(id, metadata)
-
-    // const expanded = await jsonld.expand(metadata)
-    // relationsMetadata.set(id, expanded[0]) // we take the first value, because we know we extracted metadata for a single collection, which should in a single object
-    // relationsMetadata.push(await jsonld.compact(metadata, context))
     
   }
   return {collections: collectionsMetadata, nodes: nodesMetadata, relations: relationsMetadata}
@@ -106,14 +89,17 @@ function extractCollectionMetadata(store: N3.Store, id: string) {
   setField(c, "@type", store.getQuads(id, ns.rdf('type'), null, null).map(quad => quad.object.id));
 
   // Extract view ids
-  setField(c, "view", store.getQuads(id, ns.tree('view'), null, null).map(quad => retrieveFullObject(store, quad.object, false)));
-  setField(c, "view", store.getQuads(id, ns.hydra('view'), null, null).map(quad => retrieveFullObject(store, quad.object, false)));
-  setField(c, "view", store.getQuads(id, ns.void('subset'), null, null).map(quad => retrieveFullObject(store, quad.object, false)));
-  setField(c, "view", store.getQuads(id, ns.dct('isPartOf'), null, null).map(quad => retrieveFullObject(store, quad.subject, false)));
+  setField(c, "view", store.getQuads(id, ns.tree('view'), null, null).map(quad => retrieveBaseObject(store, quad.object)));
+  setField(c, "view", store.getQuads(id, ns.hydra('view'), null, null).map(quad => retrieveBaseObject(store, quad.object)));
+  setField(c, "view", store.getQuads(id, ns.void('subset'), null, null).map(quad => retrieveBaseObject(store, quad.object)));
+  setField(c, "view", store.getQuads(id, ns.dct('isPartOf'), null, null).map(quad => retrieveBaseObject(store, quad.subject)));
 
   // Extract member ids
-  setField(c, "member", store.getQuads(id, ns.tree('member'), null, null).map(quad => retrieveFullObject(store, quad.object, false)));
-  setField(c, "member", store.getQuads(id, ns.hydra('member'), null, null).map(quad => retrieveFullObject(store, quad.object, false)));
+  setField(c, "member", store.getQuads(id, ns.tree('member'), null, null).map(quad => retrieveBaseObject(store, quad.object)));
+  setField(c, "member", store.getQuads(id, ns.hydra('member'), null, null).map(quad => retrieveBaseObject(store, quad.object)));
+
+
+  setField(c, "shape", store.getQuads(id, ns.tree('shape'), null, null).map(quad => retrieveFullObject(store, quad.object)));
 
   // Extract full import objects
   setField(c, "import", store.getQuads(id, ns.tree('import'), null, null).map(quad => retrieveFullObject(store, quad.object)));
@@ -135,7 +121,7 @@ function extractNodeMetadata(store: N3.Store, id: string) {
   setField(n, "search", store.getQuads(id, ns.tree('search'), null, null).map(quad => retrieveFullObject(store, quad.object)));
   
   // Extract relation ids
-  setField(n, "relation", store.getQuads(id, ns.tree('relation'), null, null).map(quad => retrieveFullObject(store, quad.object, false)));
+  setField(n, "relation", store.getQuads(id, ns.tree('relation'), null, null).map(quad => retrieveBaseObject(store, quad.object)));
 
   // Extract full import objects
   setField(n, "import", store.getQuads(id, ns.tree('import'), null, null).map(quad => retrieveFullObject(store, quad.object)));
@@ -163,7 +149,7 @@ function extractRelationMetadata(store: N3.Store, id: string) {
   setField(r, "value", store.getQuads(id, ns.tree('value'), null, null).map(quad => retrieveFullObject(store, quad.object)));
 
   // Extract node id
-  setField(r, "node", store.getQuads(id, ns.tree('node'), null, null).map(quad => retrieveFullObject(store, quad.object, false)));
+  setField(r, "node", store.getQuads(id, ns.tree('node'), null, null).map(quad => retrieveBaseObject(store, quad.object)));
 
   // Extract full import objects
   setField(r, "import", store.getQuads(id, ns.tree('import'), null, null).map(quad => retrieveFullObject(store, quad.object)));
@@ -186,6 +172,16 @@ function extractConditionalImportMetadata(store: N3.Store, term: N3.Term) {
   return ci;
 }
 
+/**
+ * Retrieve base object
+ * @param store 
+ * @param term 
+ * @param recursive 
+ * @param processedIds 
+ */
+function retrieveBaseObject(store: N3.Store, term: N3.Term) {
+  return retrieveFullObject(store, term, false)
+}
 
 /**
  * Recursively retrieve data by following all available predicates
