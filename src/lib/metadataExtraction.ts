@@ -92,8 +92,7 @@ function extractCollectionMetadata(store: N3.Store, id: string) {
   setField(c, "view", store.getQuads(id, ns.tree('view'), null, null).map(quad => retrieveBaseObject(store, quad.object)));
   setField(c, "view", store.getQuads(id, ns.hydra('view'), null, null).map(quad => retrieveBaseObject(store, quad.object)));
   setField(c, "view", store.getQuads(id, ns.void('subset'), null, null).map(quad => retrieveBaseObject(store, quad.object)));
-  setField(c, "view", store.getQuads(id, ns.dct('isPartOf'), null, null).map(quad => retrieveBaseObject(store, quad.subject)));
-
+  setField(c, "view", store.getQuads(null, ns.dct('isPartOf'), id, null).map(quad => retrieveBaseObject(store, quad.subject)));
   // Extract member ids
   setField(c, "member", store.getQuads(id, ns.tree('member'), null, null).map(quad => retrieveBaseObject(store, quad.object)));
   setField(c, "member", store.getQuads(id, ns.hydra('member'), null, null).map(quad => retrieveBaseObject(store, quad.object)));
@@ -257,7 +256,7 @@ const createObject = (store: N3.Store, namedNode: N3.NamedNode | N3.BlankNode, p
  */
 function setField(object: any, field: string, results: any[]) {
   if (results && results.length) {
-    if (object.field && object.field.length) {
+    if (object[field] && object[field].length) {
       object[field] = object[field].concat(results)
     } else {
       object[field] = results

@@ -9,7 +9,6 @@ const context = {
   "@vocab": ns.tree('')
 }
 
-var testcount = 0
 async function test(turtleString, result, message) {
   it(message, async () => {
     const quadArray = [];
@@ -37,15 +36,146 @@ async function evaluateMetadataExtraction(input, result) {
   }
 }
 
-describe('Testing path matching',
+
+
+describe('Testing individual metadata extractions', () => {
+  var t = `
+  @prefix ex: <${ns.ex('')}> . 
+  @prefix tree: <${ns.tree('')}> . 
+    ex:c a tree:Collection .
+  `
+  var r = {
+    collections: new Map([
+      [ns.ex("c"), {
+        "@context": context,
+        "@id": ns.ex("c"),
+        "@type": [ ns.tree('Collection') ]
+      }]
+    ]),
+    nodes: new Map(),
+    relations: new Map(),
+  }
+
+  test(t, r, "Should be able to extract a TREE collection")
+
+
+  var t = `
+  @prefix ex: <${ns.ex('')}> . 
+  @prefix hydra: <${ns.hydra('')}> . 
+    ex:c a hydra:Collection .
+  `
+  var r = {
+    collections: new Map([
+      [ns.ex("c"), {
+        "@context": context,
+        "@id": ns.ex("c"),
+        "@type": [ ns.hydra('Collection') ]
+      }]
+    ]),
+    nodes: new Map(),
+    relations: new Map(),
+  }
+
+  test(t, r, "Should be able to extract a HYDRA collection")
+
+  var t = `
+  @prefix ex: <${ns.ex('')}> . 
+  @prefix hydra: <${ns.hydra('')}> . 
+  @prefix tree: <${ns.tree('')}> . 
+    ex:c1 a tree:Collection .
+    ex:c2 a hydra:Collection .
+  `
+  var r = {
+    collections: new Map([
+      [ns.ex("c1"), {
+        "@context": context,
+        "@id": ns.ex("c1"),
+        "@type": [ ns.tree('Collection') ]
+      }],
+      [ns.ex("c2"), {
+        "@context": context,
+        "@id": ns.ex("c2"),
+        "@type": [ ns.hydra('Collection') ]
+      }]
+    ]),
+    nodes: new Map(),
+    relations: new Map(),
+  }
+
+  test(t, r, "Should be able to extract a multiple collections")
+
+
+  var t = `
+  @prefix ex: <${ns.ex('')}> . 
+  @prefix hydra: <${ns.hydra('')}> . 
+  @prefix tree: <${ns.tree('')}> . 
+  @prefix void: <${ns.void('')}> . 
+  @prefix dct: <${ns.dct('')}> . 
+    ex:c1 a tree:Collection .
+    ex:c2 a hydra:Collection .
+    ex:c1 tree:view ex:n1.
+    ex:c1 hydra:view ex:n2.
+    ex:c2 void:subset ex:n3.
+    ex:n4 dct:isPartOf ex:c2.
+    ex:n1 a tree:Node.
+    ex:n2 a tree:Node.
+    ex:n3 a tree:Node.
+    ex:n4 a tree:Node.
+  `
+  var r = {
+    collections: new Map([
+      [ns.ex("c1"), {
+        "@context": context,
+        "@id": ns.ex("c1"),
+        "@type": [ ns.tree('Collection') ],
+        "view": [{ "@id": ns.ex('n1') }, { "@id": ns.ex('n2') }]
+      }],
+      [ns.ex("c2"), {
+        "@context": context,
+        "@id": ns.ex("c2"),
+        "@type": [ ns.hydra('Collection') ],
+        "view": [{ "@id": ns.ex('n3') }, { "@id": ns.ex('n4') }]
+      }]
+    ]),
+    nodes: new Map([
+      [ns.ex('n1'), { 
+        "@context": context,
+        "@id": ns.ex('n1'),
+        "@type": [ ns.tree('Node') ]
+      }],
+      [ns.ex('n2'), { 
+        "@context": context,
+        "@id": ns.ex('n2'),
+        "@type": [ ns.tree('Node') ]
+      }],
+      [ns.ex('n3'), { 
+        "@context": context,
+        "@id": ns.ex('n3'),
+        "@type": [ ns.tree('Node') ]
+      }],
+      [ns.ex('n4'), { 
+        "@context": context,
+        "@id": ns.ex('n4'),
+        "@type": [ ns.tree('Node') ]
+      }]
+    ]),
+    relations: new Map(),
+  }
+
+  test(t, r, "Should be able to extract a multiple collections with multiple views")
+
+})
+
+describe('testing elaborate extraction',
   () => {
 
     var collectionTest = `
       @prefix ex: <${ns.ex('')}> . 
+      @prefix hydra: <${ns.hydra('')}> . 
       @prefix tree: <${ns.tree('')}> . 
       ex:c a tree:Collection ;
         tree:view ex:node1 ;
-        tree:view ex:node2 ;
+        hydra:view ex:node2 ;
         tree:member ex:m1 ;
         tree:member ex:m2 ;
         tree:member ex:m3 ;
@@ -272,7 +402,6 @@ describe('Testing path matching',
     nodes.set(ns.ex("n"), n)
     var relations = new Map();
     relations.set(ns.ex("r"), r)
-
     var combinedTestResults = {
       collections: collections,
       nodes: nodes,
@@ -459,15 +588,15 @@ describe('Testing path matching',
       "@context": context,
       "@id": "https://streams.datapiloten.be/sensors?page=1",
       "relation": [{
-        "@id": "_:b4_b13"
+        "@id": "_:b8_b13"
       }]
     })
 
     // blank node ids are required to reference the relevant objects
     const sensorRelations = new Map();
-    sensorRelations.set('_:b4_b13', {
+    sensorRelations.set('_:b8_b13', {
       "@context": context,
-      "@id": "_:b4_b13",
+      "@id": "_:b8_b13",
       "@type": [ns.tree("GreaterThanRelation")],
       "node": [{
         "@id": "https://streams.datapiloten.be/sensors?page=2"
