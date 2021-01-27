@@ -617,6 +617,75 @@ describe('testing elaborate extraction',
     }
 
     test(sensordatatest, sensordataResult, "Should be able to extract all metadata for the example sensor data.")
+
+
+    var t = `
+    @prefix ex: <${ns.ex('')}> . 
+    @prefix hydra: <${ns.hydra('')}> . 
+    @prefix tree: <${ns.tree('')}> . 
+    @prefix xsd: <${ns.xsd('')}> . 
+    ex:c1 a tree:Collection ;
+      tree:view ex:node1 .
+    
+    ex:node1 a tree:Node;
+      tree:relation ex:relation1 .
+
+    ex:relation1 a tree:SubstringRelation ;
+      tree:remainingItems "10"^^xsd:integer ;
+      tree:path ex:predicatePath ;
+      tree:value "substr1" ;
+      tree:value "substr2" ;
+      tree:node ex:Node2 .
+    `
+    var r = {
+      collections: new Map([
+        [ns.ex("c1"), {
+          "@context": context,
+          "@id": ns.ex("c1"),
+          "@type": [ ns.tree('Collection') ],
+          "view": [
+            {
+              "@id": "http://example.com/node1"
+            }
+          ]
+        }],
+      ]),
+      nodes: new Map([
+        [ns.ex('node1'), { 
+          "@context": context,
+          "@id": ns.ex('node1'),
+          "@type": [ ns.tree('Node') ],
+          "relation": [ { "@id": ns.ex("relation1") } ]
+        }],
+      ]),
+      relations: new Map([
+        [ns.ex('relation1'), { 
+          "@context": context,
+          "@id": ns.ex("relation1"),
+          "@type": [ns.tree('SubstringRelation')],
+          "node": [{
+            "@id": ns.ex("Node2")
+          }],
+          "path": [{
+            "@id": ns.ex("predicatePath")
+          }],
+          "remainingItems": [{
+            "@value": "10",
+            "@type": ns.xsd("integer"),
+          }],
+          "value": [{
+            "@value": "substr1",
+            "@type": ns.xsd("string"),
+          }, {
+            "@value": "substr2",
+            "@type": ns.xsd("string"),
+          }]
+        } ]
+      ]),
+    }   
+
+    test(t, r, "Should be able to extract a multiple values for the same relation")
+
   })
 
 
