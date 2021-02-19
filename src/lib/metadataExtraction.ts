@@ -7,7 +7,7 @@ const context = { "@vocab": ns.tree('') }
 
 export async function extractMetadata (quads: RDF.Quad[]) {
   // Create triple store of data quads
-  const store : N3.Store = await new N3.Store(quads)
+  const store : N3.Store = await new N3.Store(quads as N3.Quad[]) // have some issues with BaseQuad typing.
 
   const collectionIds = await extractCollectionids(store)
   const nodeIds = await extractNodeIds(store)

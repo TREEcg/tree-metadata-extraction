@@ -15,8 +15,15 @@
     "typescript": "^4.0.5",
     "@types/rdf-js": "^3.0.0"
   },
+  "pre-commit": [
+    "build",
+    "lint",
+    "test"
+  ],
   "scripts": {
-    "test": "rm -rf dist/; tsc; mocha tests/**/*.test.js"
+    "test": "mocha tests/**/*.test.js",
+    "build": "rm -rf dist/; tsc",
+    "publish": "yarn run build && npm publish"
   },
   "dependencies": {
     "n3": "^1.6.3"
