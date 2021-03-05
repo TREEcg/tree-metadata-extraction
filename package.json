@@ -1,6 +1,6 @@
 {
-  "name": "@dexagod/tree-metadata-extraction",
-  "version": "1.0.6",
+  "name": "@treecg/tree-metadata-extraction",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
   "devDependencies": {
@@ -28,5 +28,9 @@
   "dependencies": {
     "n3": "^1.6.3"
   },
-  "author": "Dexagod"
+  "author": "Dexagod",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TREEcg/tree-metadata-extraction.git"
+  },
 }
