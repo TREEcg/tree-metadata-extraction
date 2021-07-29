@@ -73,9 +73,8 @@ function extractNodeIds(store: N3.Store) {
 function extractRelationIds(store: N3.Store) {
   let ids: string[] = []
   // Search for node ids
-  for(let relationType of Object.keys(RelationType).map(key => (RelationType as any)[key]) ) {
-    ids = ids.concat( store.getQuads(null, ns.rdf('type'), relationType, null).map(quad => quad.subject.id) );
-  }
+  ids = ids.concat( store.getQuads(null, ns.tree('relation'), null, null).map(quad => quad.object.id) );
+  ids = ids.concat( store.getQuads(null, ns.tree('node'), null, null).map(quad => quad.subject.id) );
   return Array.from(new Set(ids))
 }
 

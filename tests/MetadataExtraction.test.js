@@ -29,7 +29,9 @@ async function evaluateMetadataExtraction(input, result) {
     let extractedMapping = extractedMetadataPerType[type]
     let resultMapping = result[type]
 
-    expect(extractedMapping.size).to.equal(resultMapping.size)
+    expect(extractedMapping.size)
+      .to.equal(resultMapping.size, `Found ${extractedMapping.size} ${type}, expected ${resultMapping.size}`);
+
     for (let key of resultMapping.keys()) {
       expect(extractedMapping.get(key)).to.deep.equal(resultMapping.get(key))
     }
@@ -278,10 +280,20 @@ describe('testing elaborate extraction',
     var nodes = new Map();
     nodes.set(ns.ex("n"), n)
 
+    var relations = new Map();
+    relations.set(ns.ex("relation1"), {
+      "@context": context,
+      "@id": ns.ex("relation1"),
+    });
+    relations.set(ns.ex("relation2"), {
+      "@context": context,
+      "@id": ns.ex("relation2"),
+    });
+
     var nodeTestResult = {
       collections: new Map(),
       nodes: nodes,
-      relations: new Map(),
+      relations: relations,
     }
 
     test(nodeTest, nodeTestResult, "Should be able to extract TREE node metadata from a quad array")
@@ -401,7 +413,15 @@ describe('testing elaborate extraction',
     var nodes = new Map();
     nodes.set(ns.ex("n"), n)
     var relations = new Map();
-    relations.set(ns.ex("r"), r)
+    relations.set(ns.ex("r"), r);
+    relations.set(ns.ex("relation1"), {
+      "@context": context,
+      "@id": ns.ex("relation1"),
+    });
+    relations.set(ns.ex("relation2"), {
+      "@context": context,
+      "@id": ns.ex("relation2"),
+    });
     var combinedTestResults = {
       collections: collections,
       nodes: nodes,
