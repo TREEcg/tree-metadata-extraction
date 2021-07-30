@@ -1,6 +1,6 @@
 {
   "name": "@treecg/tree-metadata-extraction",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/index.js",
   "devDependencies": {
@@ -21,7 +21,7 @@
     "test"
   ],
   "scripts": {
-    "test": "mocha tests/**/*.test.js",
+    "test": "yarn run build; mocha tests/**/*.test.js",
     "build": "rm -rf dist/; tsc",
     "publish": "yarn run build && npm publish"
   },
@@ -32,5 +32,5 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/TREEcg/tree-metadata-extraction.git"
-  },
+  }
 }
