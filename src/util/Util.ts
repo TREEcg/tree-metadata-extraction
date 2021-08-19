@@ -16,6 +16,7 @@ export interface Collection {
   "@id": string,
   "@type"?: string[],
   "view"?: URI[],
+  "subset"?: URI[],
   "member"?: Member[],
   "shape"?: Shape[],
   "totalItems"?: Literal[],
