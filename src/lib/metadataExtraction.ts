@@ -3,7 +3,8 @@ import * as N3 from 'n3'
 import ns from '../util/NameSpaces'
 import { RelationType, Literal, Collection, Node, Relation, ConditionalImport, RetentionPolicy } from '../util/Util';
 
-const context = { "@vocab": ns.tree('') }
+const context: any = { "@vocab": ns.tree('') }
+const collectionContext: any = { "@vocab": ns.tree(''), "subset": ns.void("subset") }
 
 export async function extractMetadata (quads: RDF.Quad[]) {
   // Create triple store of data quads
@@ -80,7 +81,7 @@ function extractNodeIds(store: N3.Store) {
   ids = ids.concat( store.getQuads(null, ns.rdf('as'), ns.hydra('CollectionPage'), null).map(quad => quad.subject.id) );
   ids = ids.concat( store.getQuads(null, ns.rdf('as'), ns.hydra('OrderedCollectionPage'), null).map(quad => quad.subject.id) );
 
-  // Searching on view causes nodes to be displayed that still need to be retrieved form another page
+  // // Searching on view causes nodes to be displayed that still need to be retrieved form another page
   // // Search for node ids on view
   // ids = ids.concat( store.getQuads(null, ns.tree('view'), null, null).map(quad => quad.object.id) );
   // ids = ids.concat( store.getQuads(null, ns.hydra('view'), null, null).map(quad => quad.object.id) );
@@ -112,7 +113,7 @@ function extractRelationIds(store: N3.Store) {
 
 function extractCollectionData(store: N3.Store, id: string) {
   const c : Collection = { 
-    "@context": context,
+    "@context": collectionContext,
     "@id": id,
    }
 
@@ -122,10 +123,10 @@ function extractCollectionData(store: N3.Store, id: string) {
   // Extract view ids
   setField(c, "view", store.getQuads(id, ns.tree('view'), null, null).map(quad => retrieveTerm(store, quad.object)));
   setField(c, "view", store.getQuads(id, ns.hydra('view'), null, null).map(quad => retrieveTerm(store, quad.object)));
-  setField(c, "view", store.getQuads(id, ns.void('subset'), null, null).map(quad => retrieveTerm(store, quad.object)));
+  setField(c, "subset", store.getQuads(id, ns.void('subset'), null, null).map(quad => retrieveTerm(store, quad.object)));
   // reverse properties
-  setField(c, "view", store.getQuads(null, ns.dct('isPartOf'), id, null).map(quad => retrieveTerm(store, quad.subject)));
-  setField(c, "view", store.getQuads(null, ns.as('partOf'), id, null).map(quad => retrieveTerm(store, quad.subject)));
+  setField(c, "subset", store.getQuads(null, ns.dct('isPartOf'), id, null).map(quad => retrieveTerm(store, quad.subject)));
+  setField(c, "subset", store.getQuads(null, ns.as('partOf'), id, null).map(quad => retrieveTerm(store, quad.subject)));
   
   // Extract member ids
   setField(c, "member", store.getQuads(id, ns.tree('member'), null, null).map(quad => retrieveTerm(store, quad.object)));

@@ -9,6 +9,11 @@ const context = {
   "@vocab": ns.tree('')
 }
 
+const collectionContext = {
+  "@vocab": ns.tree(''),
+  "subset": ns.void("subset")
+}
+
 async function test(turtleString, result, message) {
   it(message, async () => {
     const quadArray = [];
@@ -25,7 +30,6 @@ async function test(turtleString, result, message) {
 async function evaluateMetadataExtraction(input, result) {
   const extractedMetadataPerType = await extractMetadata(input)
   // Check if output is valid JSONLD
-  console.log(result, extractedMetadataPerType)
   for (let type of ['collections', 'nodes', 'relations']) {
     let extractedMapping = extractedMetadataPerType[type]
     let resultMapping = result[type]
@@ -50,7 +54,7 @@ describe('Testing individual metadata extractions', () => {
   var r = {
     collections: new Map([
       [ns.ex("c"), {
-        "@context": context,
+        "@context": collectionContext,
         "@id": ns.ex("c"),
         "@type": [ ns.tree('Collection') ]
       }]
@@ -70,7 +74,7 @@ describe('Testing individual metadata extractions', () => {
   var r = {
     collections: new Map([
       [ns.ex("c"), {
-        "@context": context,
+        "@context": collectionContext,
         "@id": ns.ex("c"),
         "@type": [ ns.hydra('Collection') ]
       }]
@@ -91,12 +95,12 @@ describe('Testing individual metadata extractions', () => {
   var r = {
     collections: new Map([
       [ns.ex("c1"), {
-        "@context": context,
+        "@context": collectionContext,
         "@id": ns.ex("c1"),
         "@type": [ ns.tree('Collection') ]
       }],
       [ns.ex("c2"), {
-        "@context": context,
+        "@context": collectionContext,
         "@id": ns.ex("c2"),
         "@type": [ ns.hydra('Collection') ]
       }]
@@ -105,7 +109,7 @@ describe('Testing individual metadata extractions', () => {
     relations: new Map(),
   }
 
-  test(t, r, "Should be able to extract a multiple collections")
+  test(t, r, "Should be able to extract multiple collections")
 
 
   var t = `
@@ -128,16 +132,16 @@ describe('Testing individual metadata extractions', () => {
   var r = {
     collections: new Map([
       [ns.ex("c1"), {
-        "@context": context,
+        "@context": collectionContext,
         "@id": ns.ex("c1"),
         "@type": [ ns.tree('Collection') ],
         "view": [{ "@id": ns.ex('n1') }, { "@id": ns.ex('n2') }]
       }],
       [ns.ex("c2"), {
-        "@context": context,
+        "@context": collectionContext,
         "@id": ns.ex("c2"),
         "@type": [ ns.hydra('Collection') ],
-        "view": [{ "@id": ns.ex('n3') }, { "@id": ns.ex('n4') }]
+        "subset": [{ "@id": ns.ex('n3') }, { "@id": ns.ex('n4') }]
       }]
     ]),
     nodes: new Map([
@@ -165,7 +169,7 @@ describe('Testing individual metadata extractions', () => {
     relations: new Map(),
   }
 
-  test(t, r, "Should be able to extract a multiple collections with multiple views")
+  test(t, r, "Should be able to extract multiple collections with multiple views")
 
 })
 
@@ -186,7 +190,7 @@ describe('testing elaborate extraction',
     `
 
     var c = {
-      "@context": context,
+      "@context": collectionContext,
       "@id": ns.ex("c"),
       "@type": [ns.tree('Collection')],
       "import": [{
@@ -506,7 +510,7 @@ describe('testing elaborate extraction',
 
     const sensorCollections = new Map()
     sensorCollections.set("https://streams.datapiloten.be/sensors", {
-      "@context": context,
+      "@context": collectionContext,
       "@id": "https://streams.datapiloten.be/sensors",
       "member": [{
           "@id": "https://streams.datapiloten.be/sensors#lora.3432333857376518@2020-06-30T14:32:57.732Z",
@@ -673,7 +677,7 @@ describe('testing elaborate extraction',
     var r = {
       collections: new Map([
         [ns.ex("c1"), {
-          "@context": context,
+          "@context": collectionContext,
           "@id": ns.ex("c1"),
           "@type": [ ns.tree('Collection') ],
           "view": [
@@ -717,21 +721,5 @@ describe('testing elaborate extraction',
       ]),
     }   
 
-    test(t, r, "Should be able to extract a multiple values for the same relation")
-
+    test(t, r, "Should be able to extract multiple values for the same relation")
   })
-
-
-
-
-// function clearJSONLDBlankNodeIds (obj) {
-//   for(const prop in obj) {
-//     delete obj["@context"]
-//     if (prop === '@id') {
-//       if (obj["@id"].startsWith('_:')) { // blank node id
-//         delete obj[prop];
-//       }
-//     } else if (typeof obj[prop] === 'object')
-//     clearJSONLDBlankNodeIds(obj[prop]);
-//   }
-// }
