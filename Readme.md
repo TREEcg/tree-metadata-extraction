@@ -44,6 +44,7 @@ In the case an Object is returned, it can have arbitrary fields that are not lis
 | Collection            | @id                 | string                |                        |
 |                       | @type               | [ string ]            |                        |
 |                       | view                | [ URI ]               | Node                   |
+|                       | subset              | [ URI ]               | Node                   |
 |                       | member              | [ URI ]               | Member                 |
 |                       | shape               | [ Shape ]             |                        |
 |                       | totalItems          | [ Literal ]           |                        |
